@@ -1,5 +1,21 @@
 {
   "hosting": {
-    "source": "."
+    "public": "out",
+    "cleanUrls": true,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/sign-in/**",
+        "destination": "/sign-in.html"
+      },
+      {
+        "source": "/sign-up/**",
+        "destination": "/sign-up.html"
+      }
+    ]
   }
 }
