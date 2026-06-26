@@ -5,7 +5,8 @@ import { TopNav } from "@/components/layout/TopNav";
 import { SavingsCounter } from "@/components/ui/SavingsCounter";
 import { BauhausShape } from "@/components/ui/BauhausShape";
 import { SpendComparisonChart, RequestsTimelineChart } from "@/components/charts/DashboardCharts";
-import { mockOverview, mockProjects, formatUSD } from "@/lib/mock-data";
+import { useDashboard } from "@/lib/DashboardContext";
+import { formatUSD } from "@/lib/utils";
 import { TrendingDown, Zap, ArrowUpRight, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -116,17 +117,64 @@ function MetricCard({
 /* Live savings ticker */
 function LiveTicker({ base }: { base: number }) {
   const [value, setValue] = useState(base);
+  
+  useEffect(() => {
+    setValue(base);
+  }, [base]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setValue((v) => v + Math.floor(Math.random() * 8 + 2));
     }, 2000);
     return () => clearInterval(interval);
-  }, [base]);
+  }, []);
+  
   return <SavingsCounter value={value} prefix="$" size="xl" duration={1800} />;
 }
 
 export default function DashboardPage() {
-  const { totalSaved, savedThisMonth, savedThisWeek, savedToday, actualSpend, projectedSpend, requestsToday, batchedToday, avgSavingPct } = mockOverview;
+  const { overview, spendData, timelineData, projects, loading } = useDashboard();
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const isLoading = loading && !timedOut;
+
+  if (isLoading) {
+    return (
+      <>
+        <TopNav title="Overview" subtitle="Loading dashboard..." />
+        <div className="dashboard-content" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          {/* Skeleton cards */}
+          <div className="card shimmer" style={{ height: 200, borderRadius: 16 }} />
+          <div className="metrics-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card shimmer" style={{ height: 140 }} />
+            ))}
+          </div>
+          <div className="charts-grid">
+            <div className="card shimmer" style={{ height: 320 }} />
+            <div className="card shimmer" style={{ height: 320 }} />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const {
+    totalSaved,
+    savedThisMonth,
+    savedThisWeek,
+    savedToday,
+    actualSpend,
+    projectedSpend,
+    requestsToday,
+    batchedToday,
+    avgSavingPct,
+  } = overview;
 
   return (
     <>
@@ -139,22 +187,7 @@ export default function DashboardPage() {
       <div className="dashboard-content">
 
         {/* Hero Savings Banner */}
-        <div
-          style={{
-            background: "linear-gradient(135deg, #ffffff 0%, var(--cream-dark) 100%)",
-            border: "1px solid var(--gray-200)",
-            borderRadius: 16,
-            padding: 40,
-            marginBottom: 24,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 32,
-            position: "relative",
-            overflow: "hidden",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
+        <div className="hero-savings-banner">
           {/* Geometric accents */}
           <div style={{ position: "absolute", top: -40, right: 120, opacity: 0.05 }}>
             <BauhausShape variant="circle" size={200} color="var(--red)" />
@@ -180,11 +213,11 @@ export default function DashboardPage() {
             <LiveTicker base={totalSaved} />
             <div style={{ marginTop: 12, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--gray-500)" }}>
-                Without Throttle: <span style={{ color: "var(--red)", fontWeight: 600 }}>{formatUSD(projectedSpend / 100)}</span>
+                Without Throttle: <span style={{ color: "var(--red)", fontWeight: 600 }}>{formatUSD(projectedSpend)}</span>
               </div>
               <div style={{ color: "var(--gray-300)" }}>|</div>
               <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--gray-500)" }}>
-                Actual spend: <span style={{ color: "var(--blue-dark)", fontWeight: 600 }}>{formatUSD(actualSpend / 100)}</span>
+                Actual spend: <span style={{ color: "var(--blue-dark)", fontWeight: 600 }}>{formatUSD(actualSpend)}</span>
               </div>
               <div style={{ color: "var(--gray-300)" }}>|</div>
               <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--gray-500)" }}>
@@ -196,9 +229,9 @@ export default function DashboardPage() {
           {/* Right stat cluster */}
           <div style={{ display: "flex", gap: 12, position: "relative", zIndex: 1, flexShrink: 0 }}>
             {[
-              { label: "This Month", value: formatUSD(savedThisMonth / 100) },
-              { label: "This Week",  value: formatUSD(savedThisWeek / 100)  },
-              { label: "Today",      value: formatUSD(savedToday / 100)     },
+              { label: "This Month", value: formatUSD(savedThisMonth) },
+              { label: "This Week",  value: formatUSD(savedThisWeek)  },
+              { label: "Today",      value: formatUSD(savedToday)     },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -224,14 +257,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Metric Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 16,
-            marginBottom: 24,
-          }}
-        >
+        <div className="metrics-grid">
           <MetricCard
             label="Requests Today"
             value={requestsToday.toLocaleString()}
@@ -258,7 +284,7 @@ export default function DashboardPage() {
           />
           <MetricCard
             label="Projects"
-            value={mockProjects.length.toString()}
+            value={projects.length.toString()}
             sub="Active this month"
             accent="black"
             geo={<BauhausShape variant="square" size={80} />}
@@ -266,7 +292,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Charts row */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div className="charts-grid">
           {/* Spend chart */}
           <div className="card" style={{ padding: 0 }}>
             <div
@@ -318,7 +344,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ padding: 20 }}>
-              <SpendComparisonChart height={260} />
+              <SpendComparisonChart height={260} data={spendData} />
             </div>
           </div>
 
@@ -333,7 +359,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div style={{ padding: 20 }}>
-              <RequestsTimelineChart height={260} />
+              <RequestsTimelineChart height={260} data={timelineData} />
             </div>
           </div>
         </div>
@@ -370,74 +396,80 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-            {mockProjects.map((proj) => {
-              const colorMap: Record<string, string> = {
-                red: "var(--red)",
-                blue: "var(--blue-dark)",
-                yellow: "var(--yellow)",
-                black: "var(--black)",
-              };
-              const barColor = colorMap[proj.color];
-              const pct = Math.round((proj.spent / proj.budget) * 100);
-              return (
-                <div key={proj.id}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {projects.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "20px 0", color: "var(--gray-400)", fontFamily: "'Space Grotesk', sans-serif", fontSize: 14 }}>
+                No projects created yet. Go to <Link href="/dashboard/projects" style={{ color: "var(--blue-dark)", fontWeight: 700 }}>Projects</Link> to create one.
+              </div>
+            ) : (
+              projects.slice(0, 5).map((proj) => {
+                const colorMap: Record<string, string> = {
+                  red: "var(--red)",
+                  blue: "var(--blue-dark)",
+                  yellow: "var(--yellow)",
+                  black: "var(--black)",
+                };
+                const barColor = colorMap[proj.color] || "var(--blue-dark)";
+                const pct = proj.budget > 0 ? Math.min(Math.round((proj.spent / proj.budget) * 100), 100) : 0;
+                return (
+                  <div key={proj.id}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div
+                          style={{
+                            width: 32, height: 32,
+                            background: barColor,
+                            borderRadius: 8,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 13, color: proj.color === "yellow" ? "#1A1A1A" : "#fff" }}>
+                            {proj.name ? proj.name[0] : "P"}
+                          </span>
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 700 }}>{proj.name}</div>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--gray-500)" }}>
+                            {proj.provider} · {proj.model}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 700, color: "#10B981" }}>
+                            +{formatUSD(proj.savedToday)} saved
+                          </div>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--gray-500)" }}>
+                            {proj.requestsToday.toLocaleString()} requests
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600 }}>
+                            ${proj.spent} / ${proj.budget}
+                          </div>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "var(--gray-500)" }}>
+                            {pct}% of budget
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="progress-track">
                       <div
-                        style={{
-                          width: 32, height: 32,
-                          background: barColor,
-                          borderRadius: 8,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 13, color: proj.color === "yellow" ? "#1A1A1A" : "#fff" }}>
-                          {proj.name[0]}
-                        </span>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 700 }}>{proj.name}</div>
-                        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--gray-500)" }}>
-                          {proj.provider} · {proj.model}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, fontWeight: 700, color: "#10B981" }}>
-                          +{formatUSD(proj.savedToday)} saved
-                        </div>
-                        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "var(--gray-500)" }}>
-                          {proj.requestsToday.toLocaleString()} requests
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 600 }}>
-                          ${proj.spent} / ${proj.budget}
-                        </div>
-                        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "var(--gray-500)" }}>
-                          {pct}% of budget
-                        </div>
-                      </div>
+                        className="progress-fill"
+                        style={{ width: `${pct}%`, background: barColor }}
+                      />
                     </div>
                   </div>
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${pct}%`, background: barColor }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
         {/* Bottom CTA: upgrade / share */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="bottom-cta-grid">
           <div
             className="card"
             style={{

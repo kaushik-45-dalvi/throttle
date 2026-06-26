@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TopNav } from "@/components/layout/TopNav";
-import { mockRequests } from "@/lib/mock-data";
+import { useDashboard } from "@/lib/DashboardContext";
 import { ChevronDown, ExternalLink, AlertCircle, CheckCircle, Clock } from "lucide-react";
 
 const STATUS_MAP = {
@@ -17,15 +17,34 @@ const PROVIDER_COLOR: Record<string, string> = {
 };
 
 export default function RequestsPage() {
+  const { requests, loading } = useDashboard();
   const [filter, setFilter] = useState({ provider: "all", status: "all", project: "all" });
-  const [selectedReq, setSelectedReq] = useState<typeof mockRequests[0] | null>(null);
+  const [selectedReq, setSelectedReq] = useState<any | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
 
-  const filtered = mockRequests.filter((r) => {
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const filtered = requests.filter((r) => {
     if (filter.provider !== "all" && r.provider !== filter.provider) return false;
     if (filter.status !== "all" && r.status !== filter.status) return false;
     if (filter.project !== "all" && r.project !== filter.project) return false;
     return true;
   });
+
+  if (loading && !timedOut) {
+    return (
+      <>
+        <TopNav title="Requests" subtitle="Loading requests log..." />
+        <div className="dashboard-content">
+          <div className="card shimmer" style={{ height: 50, marginBottom: 20 }} />
+          <div className="card shimmer" style={{ height: 400 }} />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -56,7 +75,7 @@ export default function RequestsPage() {
             {
               key: "project",
               label: "Project",
-              options: ["all", ...Array.from(new Set(mockRequests.map((r) => r.project)))],
+              options: ["all", ...Array.from(new Set(requests.map((r) => r.project)))],
             },
           ].map(({ key, label, options }) => (
             <div key={key} style={{ position: "relative" }}>
@@ -82,157 +101,167 @@ export default function RequestsPage() {
 
         {/* Table */}
         <div className="table-wrapper" style={{ marginBottom: 20 }}>
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Project</th>
-                <th>Provider / Model</th>
-                <th>Batch</th>
-                <th>Tokens In</th>
-                <th>Tokens Out</th>
-                <th>Cost</th>
-                <th>Saved</th>
-                <th>Latency</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((req) => {
-                const st = STATUS_MAP[req.status as keyof typeof STATUS_MAP];
-                const Icon = st.icon;
-                const provColor = PROVIDER_COLOR[req.provider] || "#1A1A1A";
-                const time = new Date(req.timestamp).toLocaleTimeString();
-                return (
-                  <tr key={req.id} onClick={() => setSelectedReq(req)} style={{ cursor: "pointer" }}>
-                    <td>
-                      <span className="mono" style={{ color: "var(--gray-500)" }}>{time}</span>
-                    </td>
-                    <td>
-                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13 }}>{req.project}</span>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            width: 8, height: 8,
-                            borderRadius: "50%",
-                            background: provColor,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}>
-                          {req.provider} / {req.model}
+          {requests.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--gray-400)", fontFamily: "'Space Grotesk', sans-serif" }}>
+              No API requests processed yet. Logs will appear here as your keys make calls.
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Project</th>
+                  <th>Provider / Model</th>
+                  <th>Batch</th>
+                  <th>Tokens In</th>
+                  <th>Tokens Out</th>
+                  <th>Cost</th>
+                  <th>Saved</th>
+                  <th>Latency</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((req) => {
+                  const st = STATUS_MAP[req.status as keyof typeof STATUS_MAP] || { label: req.status, color: "var(--black)", bg: "var(--gray-200)", icon: Clock };
+                  const Icon = st.icon;
+                  const provColor = PROVIDER_COLOR[req.provider] || "#1A1A1A";
+                  const time = new Date(req.timestamp).toLocaleTimeString();
+                  return (
+                    <tr key={req.id} onClick={() => setSelectedReq(req)} style={{ cursor: "pointer" }}>
+                      <td>
+                        <span className="mono" style={{ color: "var(--gray-500)" }}>{time}</span>
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13 }}>{req.project}</span>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              width: 8, height: 8,
+                              borderRadius: "50%",
+                              background: provColor,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12 }}>
+                            {req.provider} / {req.model}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="mono" style={{ fontSize: 11, color: "var(--gray-500)" }}>{req.batchId}</span>
+                        {req.batchSize > 1 && (
+                          <span
+                            style={{
+                              marginLeft: 6,
+                              background: "rgba(59, 130, 246, 0.1)",
+                              color: "var(--blue-dark)",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              fontFamily: "'Space Grotesk', sans-serif",
+                              fontSize: 10,
+                              fontWeight: 700,
+                            }}
+                          >
+                            ×{req.batchSize}
+                          </span>
+                        )}
+                      </td>
+                      <td><span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13 }}>{req.inputTokens.toLocaleString()}</span></td>
+                      <td><span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13 }}>{req.outputTokens.toLocaleString()}</span></td>
+                      <td>
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13 }}>
+                          ${req.costUsd.toFixed(4)}
                         </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="mono" style={{ fontSize: 11, color: "var(--gray-500)" }}>{req.batchId}</span>
-                      <span
-                        style={{
-                          marginLeft: 6,
-                          background: "rgba(59, 130, 246, 0.1)",
-                          color: "var(--blue-dark)",
-                          padding: "2px 6px",
-                          borderRadius: "4px",
-                          fontFamily: "'Space Grotesk', sans-serif",
-                          fontSize: 10,
-                          fontWeight: 700,
-                        }}
-                      >
-                        ×{req.batchSize}
-                      </span>
-                    </td>
-                    <td><span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13 }}>{req.inputTokens.toLocaleString()}</span></td>
-                    <td><span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13 }}>{req.outputTokens.toLocaleString()}</span></td>
-                    <td>
-                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13 }}>
-                        ${req.costUsd.toFixed(4)}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: "#2EA55A" }}>
-                        +${req.savingsUsd.toFixed(4)}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13 }}>{req.latencyMs}ms</span>
-                    </td>
-                    <td>
-                      <div
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          padding: "4px 10px",
-                          borderRadius: "12px",
-                          background: st.bg,
-                          color: st.color,
-                          fontFamily: "'Space Grotesk', sans-serif",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: "0.06em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        <Icon size={10} />
-                        {st.label}
-                      </div>
-                    </td>
-                    <td>
-                      <ExternalLink size={14} color="var(--gray-400)" />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, color: "#2EA55A" }}>
+                          +${req.savingsUsd.toFixed(4)}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13 }}>{req.latencyMs}ms</span>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            padding: "4px 10px",
+                            borderRadius: "12px",
+                            background: st.bg,
+                            color: st.color,
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          <Icon size={10} />
+                          {st.label}
+                        </div>
+                      </td>
+                      <td>
+                        <ExternalLink size={14} color="var(--gray-400)" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12, color: "var(--gray-500)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-            Showing {filtered.length} of {mockRequests.length}
-          </span>
-          <div style={{ display: "flex", gap: 4 }}>
-            {["←", "1", "2", "3", "→"].map((p, i) => (
-              <button
-                key={i}
-                style={{
-                  width: 36, height: 36,
-                  border: "1px solid var(--gray-200)",
-                  borderRadius: "6px",
-                  background: i === 1 ? "var(--blue-dark)" : "var(--white)",
-                  color: i === 1 ? "var(--white)" : "var(--gray-500)",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.15s",
-                }}
-                onMouseEnter={(e) => {
-                  if (i !== 1) {
-                    e.currentTarget.style.background = "var(--cream-dark)";
-                    e.currentTarget.style.color = "var(--black)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (i !== 1) {
-                    e.currentTarget.style.background = "var(--white)";
-                    e.currentTarget.style.color = "var(--gray-500)";
-                  }
-                }}
-              >
-                {p}
-              </button>
-            ))}
+        {filtered.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 12, color: "var(--gray-500)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              Showing {filtered.length} of {requests.length}
+            </span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {["←", "1", "→"].map((p, i) => (
+                <button
+                  key={i}
+                  style={{
+                    width: 36, height: 36,
+                    border: "1px solid var(--gray-200)",
+                    borderRadius: "6px",
+                    background: i === 1 ? "var(--blue-dark)" : "var(--white)",
+                    color: i === 1 ? "var(--white)" : "var(--gray-500)",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (i !== 1) {
+                      e.currentTarget.style.background = "var(--cream-dark)";
+                      e.currentTarget.style.color = "var(--black)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (i !== 1) {
+                      e.currentTarget.style.background = "var(--white)";
+                      e.currentTarget.style.color = "var(--gray-500)";
+                    }
+                  }}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Detail Modal */}
@@ -249,7 +278,7 @@ export default function RequestsPage() {
               <button onClick={() => setSelectedReq(null)} style={{ fontSize: 20, color: "var(--gray-400)", cursor: "pointer", border: "none", background: "none" }}>×</button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+            <div className="modal-grid" style={{ gap: 12, marginBottom: 20 }}>
               {[
                 { l: "Project",   v: selectedReq.project },
                 { l: "Provider",  v: selectedReq.provider },

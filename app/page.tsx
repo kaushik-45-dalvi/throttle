@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { BauhausShape, BauhausComposition, BauhausAccentRow } from "@/components/ui/BauhausShape";
 import { SavingsCounter } from "@/components/ui/SavingsCounter";
 import { Zap, Play, Check, ArrowRight, Activity, ArrowUpRight } from "lucide-react";
-import { mockOverview, mockLeaderboard, formatUSD } from "@/lib/mock-data";
+
 
 function HomepageMiniCalculator() {
   const [requests, setRequests] = useState(2500000); // 2.5M
@@ -147,7 +147,7 @@ function HomepageMiniCalculator() {
 }
 
 export default function Home() {
-  const [savings, setSavings] = useState(mockOverview.totalSaved);
+  const [savings, setSavings] = useState(148900);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -170,11 +170,11 @@ export default function Home() {
         }}
       >
         <div
+          className="landing-header-container"
           style={{
             maxWidth: 1200,
             margin: "0 auto",
             height: 72,
-            padding: "0 24px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -195,7 +195,7 @@ export default function Home() {
           </Link>
 
           {/* Links */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <nav className="landing-nav">
             <a href="#how-it-works" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--black)" }}>
               How it works
             </a>
@@ -208,7 +208,7 @@ export default function Home() {
           </nav>
 
           {/* Auth Button */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="landing-auth-buttons">
             <Link href="/sign-in" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", padding: "8px 16px" }}>
               Sign In
             </Link>
@@ -219,9 +219,10 @@ export default function Home() {
         </div>
       </header>
 
+
       {/* Hero Section */}
       <section style={{ borderBottom: "2px solid #1A1A1A", background: "#fff", position: "relative", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 24px", display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 48, alignItems: "center" }}>
+        <div className="landing-hero-grid" style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 24px", alignItems: "center" }}>
           
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(27,79,216,0.08)", color: "#1B4FD8", border: "1.5px solid #1B4FD8", padding: "4px 10px", marginBottom: 20 }}>
@@ -268,12 +269,12 @@ export default function Home() {
           </div>
 
           {/* Large Bauhaus Graphic Composition */}
-          <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
-            <div style={{ position: "absolute", top: -40, left: 0, transform: "rotate(-15deg)" }}>
-              <BauhausShape variant="circle" size={140} color="#F5C800" />
+          <div className="landing-graphic-container">
+            <div style={{ position: "absolute", top: "-10%", left: 0, transform: "rotate(-15deg)" }}>
+              <BauhausShape variant="circle" color="#F5C800" style={{ width: "clamp(80px, 20vw, 140px)", height: "clamp(80px, 20vw, 140px)" }} />
             </div>
-            <div style={{ position: "absolute", bottom: -20, right: 0, transform: "rotate(25deg)" }}>
-              <BauhausShape variant="square" size={100} color="#1B4FD8" />
+            <div style={{ position: "absolute", bottom: "-5%", right: 0, transform: "rotate(25deg)" }}>
+              <BauhausShape variant="square" color="#1B4FD8" style={{ width: "clamp(60px, 15vw, 100px)", height: "clamp(60px, 15vw, 100px)" }} />
             </div>
             <BauhausComposition size={360} />
           </div>
@@ -293,7 +294,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div className="landing-stats-grid">
             {[
               { label: "Requests Batched", value: "148.9M" },
               { label: "Average Saving",   value: "78%" },
@@ -328,7 +329,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div className="landing-cards-grid">
             {[
               {
                 step: "01",
@@ -404,7 +405,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          <div className="landing-pricing-grid">
             {[
               {
                 name: "Free Developer",
@@ -497,7 +498,7 @@ export default function Home() {
 
       {/* Interactive Savings Calculator Teaser */}
       <section style={{ borderBottom: "2px solid #1A1A1A", padding: "80px 0" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "0.8fr 1.2fr", gap: 48, alignItems: "center" }}>
+        <div className="landing-calculator-grid" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
           
           <div>
             <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--blue)" }}>
@@ -525,7 +526,7 @@ export default function Home() {
       <footer style={{ background: "#1A1A1A", color: "#F5F0E8", padding: "64px 0 32px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
           
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32, marginBottom: 48 }}>
+          <div className="landing-footer-grid">
             <div style={{ gridColumn: "span 2" }}>
               <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800, fontSize: 24, letterSpacing: "-0.02em", textTransform: "uppercase", color: "#F5C800", marginBottom: 16 }}>
                 Throttle

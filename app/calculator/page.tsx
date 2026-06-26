@@ -210,7 +210,7 @@ export default function CalculatorPage() {
         </div>
 
         {/* Interactive Layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 32, alignItems: "start" }}>
+        <div className="calculator-grid">
           
           {/* Left Column: Sliders & Settings */}
           <div className="card" style={{ padding: 32, background: "#fff", display: "flex", flexDirection: "column", gap: 28 }}>
@@ -279,7 +279,7 @@ export default function CalculatorPage() {
                   </select>
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="bottom-cta-grid">
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     <label style={{ fontSize: 11, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, textTransform: "uppercase", color: "var(--gray-500)" }}>
                       Input Rate ($/1M tokens)

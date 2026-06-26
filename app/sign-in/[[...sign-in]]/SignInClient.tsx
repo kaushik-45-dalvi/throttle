@@ -1,6 +1,6 @@
 "use client";
 
-import { SignIn, ClerkLoading, ClerkLoaded } from "@clerk/nextjs";
+import { SignIn, ClerkLoading, ClerkLoaded } from "@clerk/clerk-react";
 import { BauhausComposition } from "@/components/ui/BauhausShape";
 import Link from "next/link";
 
@@ -58,26 +58,9 @@ function SignInSkeleton() {
 
 export default function SignInPage() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-      }}
-    >
+    <div className="auth-container">
       {/* Left panel — Bauhaus illustration */}
-      <div
-        style={{
-          background: "#1A1A1A",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 64,
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
+      <div className="auth-sidebar">
         {/* Geometric corner accents */}
         <div style={{ position: "absolute", top: -60, left: -60, width: 200, height: 200, borderRadius: "50%", background: "#E8391D", opacity: 0.12 }} />
         <div style={{ position: "absolute", bottom: -40, right: -40, width: 160, height: 160, background: "#1B4FD8", opacity: 0.12 }} />
@@ -156,17 +139,7 @@ export default function SignInPage() {
       </div>
 
       {/* Right panel — Clerk Sign In */}
-      <div
-        style={{
-          background: "var(--cream)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 64,
-          position: "relative",
-        }}
-      >
+      <div className="auth-main">
         {/* Top geometric accent */}
         <div
           style={{
@@ -207,7 +180,7 @@ export default function SignInPage() {
           </ClerkLoading>
           <ClerkLoaded>
             <SignIn
-              path="/sign-in"
+              routing="hash"
               appearance={{
                 elements: {
                   rootBox: { width: "100%" },

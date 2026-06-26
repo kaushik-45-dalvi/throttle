@@ -76,75 +76,32 @@ export function BauhausShape({
 
 /* ── Bauhaus Hero Composition ────────────── */
 export function BauhausComposition({ size = 320 }: { size?: number }) {
-  const u = size / 4; // unit
   return (
-    <div
+    <svg
+      viewBox="0 0 360 360"
+      width={size}
+      height={size}
       style={{
-        width: size,
-        height: size,
-        position: "relative",
         flexShrink: 0,
+        width: "100%",
+        height: "100%",
+        maxWidth: size,
+        maxHeight: size,
       }}
     >
       {/* Big blue circle — top left */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0, left: 0,
-          width: u * 2, height: u * 2,
-          borderRadius: "50%",
-          background: "#1B4FD8",
-        }}
-      />
+      <circle cx="90" cy="90" r="90" fill="#1B4FD8" />
       {/* Red square — top right */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0, left: u * 2,
-          width: u * 2, height: u * 2,
-          background: "#E8391D",
-        }}
-      />
+      <rect x="180" y="0" width="180" height="180" fill="#E8391D" />
       {/* Yellow circle — bottom left */}
-      <div
-        style={{
-          position: "absolute",
-          top: u * 2, left: 0,
-          width: u * 2, height: u * 2,
-          borderRadius: "50%",
-          background: "#F5C800",
-        }}
-      />
+      <circle cx="90" cy="270" r="90" fill="#F5C800" />
       {/* Black square — bottom right */}
-      <div
-        style={{
-          position: "absolute",
-          top: u * 2, left: u * 2,
-          width: u * 2, height: u * 2,
-          background: "#1A1A1A",
-        }}
-      />
+      <rect x="180" y="180" width="180" height="180" fill="#1A1A1A" />
       {/* White circle overlay — center */}
-      <div
-        style={{
-          position: "absolute",
-          top: u * 0.9, left: u * 0.9,
-          width: u * 2.2, height: u * 2.2,
-          borderRadius: "50%",
-          background: "#F5F0E8",
-        }}
-      />
+      <circle cx="180" cy="180" r="99" fill="#F5F0E8" />
       {/* Inner red circle */}
-      <div
-        style={{
-          position: "absolute",
-          top: u * 1.3, left: u * 1.3,
-          width: u * 1.4, height: u * 1.4,
-          borderRadius: "50%",
-          background: "#E8391D",
-        }}
-      />
-    </div>
+      <circle cx="180" cy="180" r="63" fill="#E8391D" />
+    </svg>
   );
 }
 

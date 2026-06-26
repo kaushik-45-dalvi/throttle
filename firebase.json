@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "throttle",
     "public": "out",
     "cleanUrls": true,
     "ignore": [

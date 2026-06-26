@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TopNav } from "@/components/layout/TopNav";
-import { mockAlerts, mockProjects } from "@/lib/mock-data";
-import { Plus, X, Bell, BellOff, Mail, Globe, AlertTriangle } from "lucide-react";
+import { useDashboard } from "@/lib/DashboardContext";
+import { Plus, X, Bell, Mail, Globe, AlertTriangle } from "lucide-react";
 
 const Slack = ({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -12,12 +12,20 @@ const Slack = ({ size = 14 }: { size?: number }) => (
 );
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState(mockAlerts);
+  const { alerts, projects, loading: dashLoading, addAlert: add, removeAlert: remove } = useDashboard();
+
   const [showModal, setShowModal] = useState(false);
-  const [project, setProject] = useState(mockProjects[0]?.name || "");
+  const [project, setProject] = useState("");
   const [limitUsd, setLimitUsd] = useState("");
   const [type, setType] = useState("monthly");
   const [channels, setChannels] = useState<string[]>(["email"]);
+
+  // Set default project when projects load
+  useEffect(() => {
+    if (projects.length > 0 && !project) {
+      setProject(projects[0].name);
+    }
+  }, [projects, project]);
 
   const toggleChannel = (ch: string) => {
     if (channels.includes(ch)) {
@@ -27,10 +35,9 @@ export default function AlertsPage() {
     }
   };
 
-  const handleCreateAlert = () => {
-    if (!limitUsd) return;
-    const newAlert = {
-      id: `alert-${alerts.length + 1}`,
+  const handleCreateAlert = async () => {
+    if (!limitUsd || !project) return;
+    await add({
       project,
       type,
       limitUsd: parseFloat(limitUsd),
@@ -38,28 +45,61 @@ export default function AlertsPage() {
       pct: 0,
       channels,
       status: "ok",
-    };
-    setAlerts([...alerts, newAlert]);
+      createdAt: new Date().toISOString(),
+    });
     setShowModal(false);
     setLimitUsd("");
     setChannels(["email"]);
   };
 
-  const handleDeleteAlert = (id: string) => {
-    setAlerts(alerts.filter((a) => a.id !== id));
+  const handleDeleteAlert = async (id: string) => {
+    if (confirm("Are you sure you want to delete this alert rule?")) {
+      await remove(id);
+    }
   };
+
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const loading = dashLoading && !timedOut;
+
+  if (loading) {
+    return (
+      <>
+        <TopNav title="Budget Alerts" subtitle="Loading alerts..." />
+        <div className="dashboard-content">
+          <div className="card shimmer" style={{ height: 120, marginBottom: 24 }} />
+          <div className="alerts-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card shimmer" style={{ height: 220 }} />
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <TopNav
-          title="Budget Alerts"
-          subtitle="Configure budget thresholds and notifications"
-          action={{ label: "New Alert Rule", onClick: () => setShowModal(true) }}
+        title="Budget Alerts"
+        subtitle="Configure budget thresholds and notifications"
+        action={{ label: "New Alert Rule", onClick: () => {
+          if (projects.length > 0) {
+            setProject(projects[0].name);
+          }
+          setShowModal(true);
+        }}}
       />
 
       <div className="dashboard-content">
         {/* Banner */}
         <div
+          className="card"
           style={{
             background: "linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.02) 100%)",
             border: "1px solid rgba(245, 158, 11, 0.2)",
@@ -85,11 +125,11 @@ export default function AlertsPage() {
         </div>
 
         {/* Alerts Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+        <div className="alerts-grid">
           {alerts.map((alert) => {
-            const isNearLimit = alert.pct >= 75;
+            const isNearLimit = (alert.pct || 0) >= 75;
             const statusColor = isNearLimit ? "#E8391D" : "#2EA55A";
-            const borderAccent = alert.pct >= 75 ? "#E8391D" : "#1A1A1A";
+            const borderAccent = (alert.pct || 0) >= 75 ? "#E8391D" : "#1A1A1A";
             return (
               <div
                 key={alert.id}
@@ -137,6 +177,7 @@ export default function AlertsPage() {
                         justifyContent: "center",
                         cursor: "pointer",
                         color: "var(--gray-400)",
+                        background: "none",
                         transition: "all 0.15s",
                       }}
                       onMouseEnter={(e) => {
@@ -156,17 +197,17 @@ export default function AlertsPage() {
                   <div style={{ marginBottom: 20 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13 }}>
                       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}>
-                        ${alert.currentUsd} / ${alert.limitUsd} limit
+                        ${alert.currentUsd || 0} / ${alert.limitUsd} limit
                       </span>
                       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, color: statusColor }}>
-                        {alert.pct}%
+                        {alert.pct || 0}%
                       </span>
                     </div>
                     <div className="progress-track" style={{ height: 10 }}>
                       <div
                         className="progress-fill"
                         style={{
-                          width: `${alert.pct}%`,
+                          width: `${alert.pct || 0}%`,
                           background: statusColor,
                           transition: "width 0.5s ease",
                         }}
@@ -179,17 +220,17 @@ export default function AlertsPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--gray-200)", paddingTop: 16 }}>
                   {/* Channels */}
                   <div style={{ display: "flex", gap: 8 }}>
-                    {alert.channels.includes("email") && (
+                    {(alert.channels || []).includes("email") && (
                       <div title="Email Notification" style={{ width: 32, height: 32, border: "1px solid var(--gray-200)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cream-dark)", color: "var(--black)" }}>
                         <Mail size={14} />
                       </div>
                     )}
-                    {alert.channels.includes("slack") && (
+                    {(alert.channels || []).includes("slack") && (
                       <div title="Slack Channel" style={{ width: 32, height: 32, border: "1px solid rgba(59, 130, 246, 0.2)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(59, 130, 246, 0.1)", color: "var(--blue-dark)" }}>
                         <Slack size={14} />
                       </div>
                     )}
-                    {alert.channels.includes("webhook") && (
+                    {(alert.channels || []).includes("webhook") && (
                       <div title="Webhook Callback" style={{ width: 32, height: 32, border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(245, 158, 11, 0.1)", color: "var(--yellow-dark)" }}>
                         <Globe size={14} />
                       </div>
@@ -273,7 +314,7 @@ export default function AlertsPage() {
               <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 18, fontWeight: 800, textTransform: "uppercase", letterSpacing: "-0.01em" }}>
                 Add Alert Rule
               </div>
-              <button onClick={() => setShowModal(false)} style={{ cursor: "pointer" }}>
+              <button onClick={() => setShowModal(false)} style={{ cursor: "pointer", border: "none", background: "none" }}>
                 <X size={20} />
               </button>
             </div>
@@ -283,13 +324,19 @@ export default function AlertsPage() {
                 <label style={{ display: "block", fontFamily: "'Space Grotesk', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
                   Target Project
                 </label>
-                <select className="input" value={project} onChange={(e) => setProject(e.target.value)}>
-                  {mockProjects.map((p) => (
-                    <option key={p.id} value={p.name}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
+                {projects.length === 0 ? (
+                  <div style={{ color: "var(--red)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
+                    ⚠️ You must create a project first!
+                  </div>
+                ) : (
+                  <select className="input" value={project} onChange={(e) => setProject(e.target.value)}>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -362,7 +409,12 @@ export default function AlertsPage() {
                 <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleCreateAlert}>
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  onClick={handleCreateAlert}
+                  disabled={projects.length === 0 || !limitUsd}
+                >
                   Create Rule
                 </button>
               </div>

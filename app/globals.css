@@ -694,17 +694,346 @@ select.input { cursor: pointer; }
   animation: shimmer 1.5s infinite linear;
 }
 
-/* ─── Responsive ──────────────────────────── */
+/* ─── Responsive & Grid Layouts ──────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.bottom-cta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.alerts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.billing-usage-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.hero-savings-banner {
+  background: linear-gradient(135deg, #ffffff 0%, var(--cream-dark) 100%);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.landing-header-container {
+  padding: 0 24px;
+}
+.landing-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topnav-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topnav-btn-text {
+  display: inline;
+}
+
+.mobile-menu-btn {
+  display: none !important;
+}
+
+/* Landing Page responsive classes */
+.landing-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.landing-hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+}
+.landing-graphic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+}
+.landing-graphic-shape-1 {
+  width: 140px;
+  height: 140px;
+}
+.landing-graphic-shape-2 {
+  width: 100px;
+  height: 100px;
+}
+.landing-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.landing-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.landing-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.landing-calculator-grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 48px;
+  align-items: center;
+}
+.landing-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+/* Custom Responsive Layout Grids */
+.calculator-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 32px;
+  align-items: start;
+}
+.auth-container {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.auth-sidebar {
+  background: #1A1A1A;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-main {
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+  position: relative;
+}
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 @media (max-width: 1024px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .plans-grid { grid-template-columns: repeat(2, 1fr); }
+  .landing-pricing-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
-  .dashboard-main { margin-left: 0; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .topnav { padding: 0 var(--space-4); }
-  .dashboard-content { padding: var(--space-4); }
-  .container { padding: 0 var(--space-4); }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--duration-base) var(--ease-bauhaus);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .dashboard-main {
+    margin-left: 0;
+  }
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+  .topnav {
+    padding: 0 var(--space-4);
+  }
+  .dashboard-content {
+    padding: var(--space-4);
+  }
+  .container {
+    padding: 0 var(--space-4);
+  }
+
+  /* Show mobile menu trigger */
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  /* Responsive layout overrides */
+  .hero-savings-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 24px;
+    gap: 20px;
+  }
+
+  .metrics-grid,
+  .charts-grid,
+  .bottom-cta-grid,
+  .projects-grid,
+  .alerts-grid,
+  .billing-usage-grid,
+  .plans-grid,
+  .calculator-grid,
+  .modal-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal {
+    padding: var(--space-4) !important;
+  }
+
+  /* Auth page mobile stack */
+  .auth-container {
+    grid-template-columns: 1fr !important;
+  }
+  .auth-sidebar {
+    display: none !important;
+  }
+  .auth-main {
+    padding: 32px 16px !important;
+  }
+
+  /* Landing Page overrides */
+  .landing-nav {
+    display: none !important;
+  }
+  .landing-hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+    padding: 40px 20px !important;
+    text-align: left !important;
+  }
+  .landing-hero-grid h1 {
+    font-size: 38px !important;
+  }
+  .landing-graphic-container {
+    max-width: 260px !important;
+    margin: 20px auto !important;
+  }
+  .landing-graphic-shape-1 {
+    width: 90px !important;
+    height: 90px !important;
+  }
+  .landing-graphic-shape-2 {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  .landing-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+  .landing-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .landing-pricing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .landing-calculator-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  .landing-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .landing-footer-grid > div {
+    grid-column: span 1 !important;
+  }
 }
+
+@media (max-width: 480px) {
+  .landing-hero-grid h1 {
+    font-size: 34px !important;
+  }
+  .landing-graphic-container {
+    max-width: 200px !important;
+    margin: 10px auto !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .landing-header-container {
+    padding: 0 12px !important;
+  }
+  .landing-auth-buttons {
+    gap: 6px !important;
+  }
+  .landing-auth-buttons a {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+  }
+
+  .topnav-live {
+    display: none !important;
+  }
+  .topnav-btn-text {
+    display: none !important;
+  }
+  .topnav .btn {
+    padding: 8px !important;
+    min-height: 36px;
+    min-width: 36px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .landing-auth-buttons a:first-child {
+    display: inline-block !important;
+  }
+  .landing-auth-buttons {
+    gap: 4px !important;
+  }
+  .landing-auth-buttons a {
+    font-size: 10px !important;
+    padding: 4px 6px !important;
+  }
+}
+
+
+

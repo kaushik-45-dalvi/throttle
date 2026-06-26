@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Plus, Search } from "lucide-react";
+import { Bell, Plus, Search, Menu } from "lucide-react";
 import Link from "next/link";
 
 interface TopNavProps {
@@ -15,30 +15,52 @@ export function TopNav({ title, subtitle, action }: TopNavProps) {
 
   return (
     <header className="topnav">
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <h1
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Mobile Menu Toggle */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("toggle-sidebar"))}
+          className="mobile-menu-btn"
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 20,
-            fontWeight: 800,
-            letterSpacing: "-0.02em",
-            textTransform: "uppercase",
-            color: "var(--black)",
-            lineHeight: 1,
+            width: 36, height: 36,
+            border: "1px solid var(--gray-200)",
+            borderRadius: "8px",
+            background: "var(--white)",
+            color: "var(--gray-500)",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "all 0.15s",
           }}
         >
-          {title}
-        </h1>
-        {subtitle && (
-          <p style={{ fontSize: 12, color: "var(--gray-500)", fontFamily: "'Inter', sans-serif" }}>
-            {subtitle}
-          </p>
-        )}
+          <Menu size={16} />
+        </button>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <h1
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 20,
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              textTransform: "uppercase",
+              color: "var(--black)",
+              lineHeight: 1,
+            }}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mobile-subtitle" style={{ fontSize: 12, color: "var(--gray-500)", fontFamily: "'Inter', sans-serif" }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
+
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {/* Live dot */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div className="topnav-live" style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div
             style={{
               width: 8, height: 8,
@@ -129,12 +151,12 @@ export function TopNav({ title, subtitle, action }: TopNavProps) {
           action.href ? (
             <Link href={action.href} className="btn btn-red btn-sm">
               <Plus size={14} />
-              {action.label}
+              <span className="topnav-btn-text">{action.label}</span>
             </Link>
           ) : (
             <button className="btn btn-red btn-sm" onClick={action.onClick}>
               <Plus size={14} />
-              {action.label}
+              <span className="topnav-btn-text">{action.label}</span>
             </button>
           )
         )}

@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { RedirectToSignIn, useAuth } from "@clerk/nextjs";
+import { RedirectToSignIn, useAuth, useUser } from "@clerk/clerk-react";
+import { initUserIfNeeded } from "@/lib/firestore";
+import { DashboardProvider } from "@/lib/DashboardContext";
 
 export default function DashboardLayout({
   children,
@@ -9,6 +12,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isLoaded, userId } = useAuth();
+  const { user } = useUser();
+  const initRef = useRef(false);
+
+  useEffect(() => {
+    if (userId && user && !initRef.current) {
+      initRef.current = true;
+      initUserIfNeeded(
+        userId,
+        user.primaryEmailAddress?.emailAddress,
+        user.fullName || user.firstName || undefined
+      ).catch(console.error);
+    }
+  }, [userId, user]);
 
   if (!isLoaded) {
     return (
@@ -23,9 +39,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
-      <div className="dashboard-main">{children}</div>
-    </div>
+    <DashboardProvider>
+      <div style={{ display: "flex", minHeight: "100vh" }}>
+        <Sidebar />
+        <div className="dashboard-main">{children}</div>
+      </div>
+    </DashboardProvider>
   );
 }
