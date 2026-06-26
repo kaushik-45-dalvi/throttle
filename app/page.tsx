@@ -419,7 +419,7 @@ export default function Home() {
               },
               {
                 name: "Pro Optimizer",
-                price: "₹399",
+                price: "$20",
                 period: "month",
                 desc: "Designed for scaling startups & apps.",
                 features: ["Up to 1M requests / mo", "Unlimited projects & keys", "Configurable batch window", "Slack & Webhook alerts", "Premium analytics"],

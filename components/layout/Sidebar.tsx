@@ -96,7 +96,7 @@ export function Sidebar() {
   const planId = billingLoading ? "free" : (billing?.plan || "free");
   const planInfo = {
     free: { name: "Free Plan", price: "Free", color: "var(--gray-400)" },
-    pro: { name: "Pro Plan", price: "₹399/mo", color: "var(--yellow-dark)" },
+    pro: { name: "Pro Plan", price: "$20/mo", color: "var(--yellow-dark)" },
     enterprise: { name: "Enterprise", price: "Custom", color: "var(--red)" }
   }[planId as "free" | "pro" | "enterprise"] || { name: "Free Plan", price: "Free", color: "var(--gray-400)" };
 
