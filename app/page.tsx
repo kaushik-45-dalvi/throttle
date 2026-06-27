@@ -409,7 +409,7 @@ export default function Home() {
             {[
               {
                 name: "Free Developer",
-                price: "₹0",
+                price: "$0",
                 period: "forever",
                 desc: "Perfect for testing, builders and side apps.",
                 features: ["Up to 50k requests / mo", "2 active projects", "10ms fixed window", "Standard overview dashboard"],

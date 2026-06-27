@@ -12,7 +12,7 @@ export default function BillingPage() {
     {
       id: "free",
       name: "Free Developer",
-      price: "₹0",
+      price: "$0",
       period: "forever",
       desc: "For hobbyists and side projects",
       features: [
